@@ -5,13 +5,16 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from pysot.models.head.garpn import GARPN, MultiGARPN
 from pysot.models.head.mask import MaskCorr, Refine
 from pysot.models.head.rpn import UPChannelRPN, DepthwiseRPN, MultiRPN
 
 RPNS = {
         'UPChannelRPN': UPChannelRPN,
         'DepthwiseRPN': DepthwiseRPN,
-        'MultiRPN': MultiRPN
+        'MultiRPN': MultiRPN,
+        'GaRPN': GARPN,
+        'MultiGARPN': MultiGARPN
        }
 
 MASKS = {
