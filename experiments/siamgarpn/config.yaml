@@ -1,0 +1,108 @@
+META_ARC: "siamrpn_r50_l234_dwxcorr"
+
+BACKBONE:
+    TYPE: "resnet50"
+    KWARGS:
+        used_layers: [3]
+
+ADJUST:
+    ADJUST: true
+    TYPE: "AdjustAllLayer"
+    KWARGS:
+        in_channels: [1024]
+        out_channels: [256]
+
+RPN:
+    TYPE: 'GaRPN'
+    KWARGS:
+        in_channels: 256
+        feat_channels: 256
+        octave_base_scale: 8
+        scales_per_octave: 3
+        octave_ratios: [0.5, 1.0, 2.0]
+        anchor_strides: [8]
+        anchor_base_sizes: None
+        anchoring_means: [.0, .0, .0, .0]
+        anchoring_stds: [0.07, 0.07, 0.14, 0.14]
+        target_means: (.0, .0, .0, .0)
+        target_stds: [0.07, 0.07, 0.11, 0.11]
+        loc_filter_thr: 0.01
+        loss_loc:
+            type: FocalLoss
+            use_sigmoid: True
+            gamma: 2.0
+            alpha: 0.25
+            loss_weight: 1.0
+        loss_shape:
+            type: BoundedIoULoss
+            beta: 0.2
+            loss_weight: 1.0
+        loss_cls:
+            type: CrossEntropyLoss
+            use_sigmoid: True
+            loss_weight: 1.0
+        loss_bbox:
+            type: SmoothL1Loss
+            beta: 1.0
+            loss_weight: 1.0
+
+GARPN:
+    TRAIN:
+        allowed_border: -1
+        pos_weight: -1
+        center_ratio: 0.2
+        ignore_ratio: 0.5
+        debug: False
+        ga_assigner:
+            type: ApproxMaxIoUAssigner
+            pos_iou_thr: 0.7
+            neg_iou_thr: 0.3
+            min_pos_iou: 0.3
+            ignore_iof_thr: -1
+        ga_sampler:
+            type: RandomSampler
+            num: 256
+            pos_fraction: 0.5
+            neg_pos_ub: -1
+            add_gt_as_proposals: False
+        assigner:
+            type: MaxIoUAssigner
+            pos_iou_thr: 0.7
+            neg_iou_thr: 0.3
+            min_pos_iou: 0.3
+            ignore_iof_thr: -1
+        sampler:
+            type: RandomSampler
+            num: 256
+            pos_fraction: 0.5
+            neg_pos_ub: -1
+            add_gt_as_proposals: False
+
+MASK:
+    MASK: False
+    TYPE: 'MaskCorr'
+    KWARGS:
+        in_channels: 256
+        hidden: 256
+        out_channels: 3969
+
+REFINE:
+    REFINE: False
+    TYPE: 'Refine'
+
+ANCHOR:
+    STRIDE: 8
+    RATIOS: [0.33, 0.5, 1, 2, 3]
+    SCALES: [8]
+    ANCHOR_NUM: 5
+
+TRACK:
+    TYPE: 'SiamMaskTracker'
+    PENALTY_K: 0.10
+    WINDOW_INFLUENCE: 0.41
+    LR: 0.32
+    EXEMPLAR_SIZE: 127
+    INSTANCE_SIZE: 255
+    BASE_SIZE: 8
+    CONTEXT_AMOUNT: 0.5
+    MASK_THERSHOLD: 0.15
